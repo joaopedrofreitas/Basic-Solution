@@ -49,35 +49,36 @@ def print_matrix(matriz):
             print(elemento, end=" ")
         print("]")
 
-def Eliminacao_Gauss(A,b,I,O,num_lin):
+def Eliminacao_Gauss(A,b,I,O,num_lin):    
     n = len(A)
-    #print(I)
+    M = [A[i] + [b[i]] for i in range(n)]
     for i in range(n):
-        A[i].append(b[i])
-    #print_matrix(A)
-    for i in range(n):
+        max_el = abs(M[i][i])
         max_row = i
         for k in range(i+1, n):
-            if abs(A[k][i]) > abs(A[max_row][i]):
+            if abs(M[k][i]) > max_el:
+                max_el = abs(M[k][i])
                 max_row = k
-        if A[i][i] == 0:
-    
-            return 
-        A[i], A[max_row] = A[max_row], A[i]
+        M[i], M[max_row] = M[max_row], M[i]
+
+        if M[i][i] == 0:
+            return None
+
         for k in range(i+1, n):
-            c = -A[k][i] / A[i][i]
+            c = -M[k][i] / M[i][i]
             for j in range(i, n+1):
                 if i == j:
-                    A[k][j] = 0
+                    M[k][j] = 0
                 else:
-                    A[k][j] += c * A[i][j]
-    x = [0 for _ in range(n)]                                          #Salvar respostas em map{x1:Val, x2: Val, x3: Val, XN: Val }
+                    M[k][j] += c * M[i][j]
+
+    x = [0 for i in range(n)]
     for i in range(n-1, -1, -1):
-        x[i] = A[i][n] / A[i][i]
+        x[i] = M[i][n] / M[i][i]
         for k in range(i-1, -1, -1):
-            A[k][n] -= A[k][i] * x[i]
-    f = {chave: 0 for chave in range(num_lin)}
-    #print(x)
+            M[k][n] -= M[k][i] * x[i]
+
+    f = {chave: 0 for chave in range(num_lin)}                                #Salvar respostas em map{x1:Val, x2: Val, x3: Val, XN: Val }
     i=0
     for idx in I:
         f[idx]=x[i]
@@ -96,6 +97,7 @@ def is_viable(Solution):
  
 def objective_func(Solution,c):
     i=0
+    Resp=0
     for coeficiente in c:
         Resp+=coeficiente*Solution[i]
         i+=1
@@ -112,17 +114,19 @@ def solve(filename):
             set_coluna(A_B,get_coluna(A,idx),aux)
             aux+=1
         Solutions.append(Eliminacao_Gauss(A_B,b,I,A,n))
-    return Solutions
+    return Solutions,c
         
     
 
 if __name__ ==  "__main__":
     filename = sys.argv[1]
-    Solutions = solve(filename)
+    Solutions,c = solve(filename)
     for i in Solutions:
+        z=0
         if i is not None:
             valores_x = ", ".join(str(i[j]) for j in range(len(i)))
-            print(f"Solução: x=({valores_x}),{'viável' if is_viable(i) else 'inviável'}")
+            z=objective_func(i,c)
+            print(f"Solução: x=({valores_x}), z={z} ,{'viável' if is_viable(i) else 'inviável'}")
     print(f"Soluções Básicas viaveis:\t {Viavel}")
     print(f"Soluções Básicas Inviaveis:\t {Inviavel}")
     

@@ -1,4 +1,4 @@
-# Basic-Solution-Simplex without Numpy
+# Basic-Solution
 
 ## Instruções de Execução
 

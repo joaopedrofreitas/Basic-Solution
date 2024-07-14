@@ -4,7 +4,6 @@ import math
 Viavel=0
 Inviavel=0
 
-
 def read_file(file):#OK!
     with open(file, 'r') as f:
         n, m = map(int, f.readline().split())
@@ -115,18 +114,70 @@ def solve(filename):
             aux+=1
         Solutions.append(Eliminacao_Gauss(A_B,b,I,A,n))
     return Solutions,c
-        
-    
 
+def is_optimal(Solutions,c):
+    Valores=[]
+    for i in Solutions:
+        if i is not None:
+            if is_viable(i):
+                Valores.append(objective_func(i,c))
+    return min(Valores)
+            
 if __name__ ==  "__main__":
     filename = sys.argv[1]
     Solutions,c = solve(filename)
+    otimo_value=is_optimal(Solutions,c)
     for i in Solutions:
         z=0
         if i is not None:
             valores_x = ", ".join(str(i[j]) for j in range(len(i)))
             z=objective_func(i,c)
-            print(f"Solução: x=({valores_x}), z={z} ,{'viável' if is_viable(i) else 'inviável'}")
-    print(f"Soluções Básicas viaveis:\t {Viavel}")
-    print(f"Soluções Básicas Inviaveis:\t {Inviavel}")
+            print(f"Solução: x=({valores_x}), z={z} ,{'viável' if is_viable(i) else 'inviável'} {' ==> ótima' if (z==otimo_value and is_viable(i))  else ' '}")
+    print(f"Soluções Básicas viaveis:\t {int(Viavel/2)}")
+    print(f"Soluções Básicas Inviaveis:\t {int(Inviavel/2)}")
     
+
+'''
+COMENTÁRIOS
+
+1- A função 'read_file' recebe o niome do arquivo e retorna:n -> numero de váriaveis, m-> numero de restrições, c-> vetor de coeficientes da função objetivo
+A-> Matriz de coeficientes das restrições, b-> vetor com os valores das restrições.
+
+2- Na função solve é realizada as seguintes operações:
+
+* Criação de uma lista que possui todas as combinações com as váriaveis, Exemplo: [ (0,1,2), (0,2,3), ...], combinações geradas pela função get combinações
+* Com o vetor de combinações possíveis feito (I), É começado a ser geradas as matrizes com esses indices, Exemplo:
+(0,1,2)         (0,2,3)
+|0|1|1|         |0|1|2|
+|1|0|0|         |1|0|1|
+|1|1|0|         |1|0|1|
+
+A cada iteração é gerada uma matriz pra cada combinação possível de indices.
+Sendo assim é passada para a função Eliminacao_Gauss essas matrizes com o vetor de b, Para assim ser realizada a resolução da matriz.
+O formato que é passado para essa função é o Ax = b:
+
+|0|1|1| |0|     |100|
+|1|0|0| |1| =   |50|
+|1|1|0| |2|     |750|
+
+    A    x        b
+Com o Algoritmo da eliminação de Gauss_Jordan conseguimos receber os resultados das variáveis que estão sendo enviadas para a função.
+
+* Para salvar os valores das variáveis eu optei por um dicionario onde são armazenadas da seguinte maneira:
+Tomando como exemplo uma matriz com os indices (1,3,4), Depois da resolção de sua matriz são retornados os valores de x1,x3,x4 (Leva-se em
+consideração que começo pelo x0),tomando como exemplo os valore de x1=23 x3=45 x4=67,  Para salvar no dicinário é salvo da seguinte forma 
+{'0':0,'1':23,'2':0,'3':45,'4':67}
+
+Sendo assim, em cada chave do dicionário é salvo o valor correto do X, seguindo os numeros.
+
+* Para verificações de soluções viáveis e inviáveis há a função is_viable() que se encontrar algum negativo já retorna False: Sinalizando uma solução
+inviável e caso não há nenhum negativo ela retorna True: Sinalizando uma solução viável. Para descobrir se ela é uma solução ótima eu vefico na 
+função is_optimal se ela é viável e pego o menor valor das funções objetivos.
+
+* Printando os resultados: Na variavel valores_x eu salvo os valores de x1,x2, ... xn em uma lista para printar depois, o valor de Z é recalculado
+para cada solução sendo printado depois, há uma chekagem dentro do print se a solução é viável ou inviável , assim como uma chekagem para ver o valor
+de Z, para ver se a solução é otima ou não.
+
+* Para printar soluções básicas viáveis ou inviáveis foi utilizada variáveis globais que entram na função is_viable() e armazanam se a solução é viável
+ou inviável
+'''
